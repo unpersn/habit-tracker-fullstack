@@ -50,27 +50,28 @@ router.post('/:id/complete', auth, async (req, res) => {
             return res.status(404).json({ message: 'Привычка не найдена' });
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Получаем дату из запроса или используем текущую
+        const targetDate = req.body.date ? new Date(req.body.date) : new Date();
+        targetDate.setHours(0, 0, 0, 0);
 
-        // Проверяем, выполнена ли привычка сегодня
-        const todayCompletion = habit.completions.find(completion => {
+        // Проверяем, выполнена ли привычка в указанную дату
+        const existingCompletion = habit.completions.find(completion => {
             const completionDate = new Date(completion.date);
             completionDate.setHours(0, 0, 0, 0);
-            return completionDate.getTime() === today.getTime();
+            return completionDate.getTime() === targetDate.getTime();
         });
 
-        if (todayCompletion) {
+        if (existingCompletion) {
             // Убираем выполнение
             habit.completions = habit.completions.filter(completion => {
                 const completionDate = new Date(completion.date);
                 completionDate.setHours(0, 0, 0, 0);
-                return completionDate.getTime() !== today.getTime();
+                return completionDate.getTime() !== targetDate.getTime();
             });
         } else {
             // Добавляем выполнение
             habit.completions.push({
-                date: new Date(),
+                date: targetDate,
                 note: req.body.note || ''
             });
         }

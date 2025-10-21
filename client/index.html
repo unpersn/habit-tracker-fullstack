@@ -34,7 +34,7 @@
                 </form>
             </section>
 
-            <!-- Новый раздел календаря -->
+            <!-- Календарь -->
             <section class="calendar-section">
                 <h2>📅 Календарь привычек</h2>
                 <div class="calendar-controls">
@@ -67,11 +67,22 @@
                         <div class="legend-color completed"></div>
                         <span>Все выполнено</span>
                     </div>
+                    <div class="legend-item">
+                        <div class="legend-color future"></div>
+                        <span>Будущие дни</span>
+                    </div>
                 </div>
             </section>
 
+            <!-- Раздел привычек с индикатором выбранного дня -->
             <section class="habits-section">
-                <h2>Мои привычки</h2>
+                <div class="habits-header">
+                    <h2 id="habitsTitle">Мои привычки</h2>
+                    <div id="selectedDateInfo" class="selected-date-info" style="display: none;">
+                        <span id="selectedDateText"></span>
+                        <button id="backToToday" class="back-to-today-btn">Вернуться к сегодня</button>
+                    </div>
+                </div>
                 <div id="habitsList" class="habits-list"></div>
                 <div id="emptyState" class="empty-state">
                     <p>У вас пока нет привычек. Добавьте первую!</p>
@@ -96,22 +107,6 @@
                 </div>
             </section>
         </main>
-    </div>
-
-    <!-- Модальное окно для просмотра дня -->
-    <div id="dayModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalDate"></h3>
-                <span class="close" onclick="habitTracker.closeDayModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div id="dayHabits"></div>
-                <div id="noDayHabits" class="empty-day" style="display: none;">
-                    <p>В этот день привычки не отслеживались</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Экран ошибки -->
