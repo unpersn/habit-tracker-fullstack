@@ -40,17 +40,17 @@ class HabitTracker {
             // Инициализируем интерфейс
             this.renderUserInfo();
             this.bindEvents();
+            this.initCalendar();
             
-            // Загружаем данные
+            // Загружаем данные и ждем их загрузки
             await this.loadHabits();
+            
+            // Только после загрузки данных рендерим все
             this.render();
             this.updateStats();
-            
-            // Инициализируем календарь только после загрузки привычек
-            this.initCalendar();
             this.renderCalendar();
             
-            console.log('✅ Инициализация завершена');
+            console.log('✅ Инициализация завершена. Привычек загружено:', this.habits.length);
             
         } catch (error) {
             console.error('❌ Ошибка инициализации:', error);
@@ -123,22 +123,27 @@ class HabitTracker {
                 headers: this.getAuthHeaders()
             });
 
-            console.log('📡 Ответ сервера:', response.status);
+            console.log('📡 Ответ сервера на загрузку привычек:', response.status);
 
             if (response.ok) {
-                this.habits = await response.json();
-                console.log('✅ Привычки загружены:', this.habits.length);
+                const data = await response.json();
+                this.habits = data;
+                console.log('✅ Привычки успешно загружены:', this.habits.length);
+                console.log('📋 Данные привычек:', this.habits);
             } else if (response.status === 401) {
                 console.log('❌ Токен недействителен, выходим');
                 this.logout();
                 return;
             } else {
+                const errorText = await response.text();
+                console.error('❌ Ошибка загрузки привычек:', response.status, errorText);
                 throw new Error(`Ошибка сервера: ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Ошибка загрузки привычек:', error);
-            // Не показываем ошибку, просто оставляем пустой список
+            console.error('❌ Ошибка подключения при загрузке привычек:', error);
             this.habits = [];
+            // Показываем ошибку пользователю
+            alert('Ошибка загрузки привычек. Проверьте подключение к интернету.');
         }
     }
 
@@ -150,6 +155,8 @@ class HabitTracker {
 
         if (!habitName) return;
 
+        console.log('➕ Добавляем привычку:', habitName);
+
         try {
             const response = await fetch(`${API_BASE_URL}/habits`, {
                 method: 'POST',
@@ -157,18 +164,26 @@ class HabitTracker {
                 body: JSON.stringify({ name: habitName })
             });
 
+            console.log('📡 Ответ сервера на добавление:', response.status);
+
             if (response.ok) {
                 const newHabit = await response.json();
+                console.log('✅ Новая привычка создана:', newHabit);
+                
                 this.habits.unshift(newHabit);
                 this.render();
                 this.updateStats();
-                this.renderCalendar(); // Обновляем календарь
+                this.renderCalendar();
                 input.value = '';
+                
+                console.log('📊 Всего привычек теперь:', this.habits.length);
             } else {
+                const errorText = await response.text();
+                console.error('❌ Ошибка добавления привычки:', errorText);
                 alert('Ошибка добавления привычки');
             }
         } catch (error) {
-            console.error('Ошибка добавления привычки:', error);
+            console.error('❌ Ошибка подключения при добавлении:', error);
             alert('Ошибка подключения к серверу');
         }
     }
@@ -176,63 +191,92 @@ class HabitTracker {
     async deleteHabit(id) {
         if (!confirm('Удалить привычку?')) return;
 
+        console.log('🗑️ Удаляем привычку:', id);
+
         try {
             const response = await fetch(`${API_BASE_URL}/habits/${id}`, {
                 method: 'DELETE',
                 headers: this.getAuthHeaders()
             });
 
+            console.log('📡 Ответ сервера на удаление:', response.status);
+
             if (response.ok) {
                 this.habits = this.habits.filter(habit => habit._id !== id);
                 this.render();
                 this.updateStats();
-                this.renderCalendar(); // Обновляем календарь
+                this.renderCalendar();
+                console.log('✅ Привычка удалена. Осталось:', this.habits.length);
+            } else {
+                console.error('❌ Ошибка удаления привычки');
             }
         } catch (error) {
-            console.error('Ошибка удаления:', error);
+            console.error('❌ Ошибка подключения при удалении:', error);
         }
     }
 
     async toggleHabitCompletion(id) {
+        console.log('🔄 Переключаем выполнение привычки:', id);
+
         try {
             const response = await fetch(`${API_BASE_URL}/habits/${id}/complete`, {
                 method: 'POST',
                 headers: this.getAuthHeaders()
             });
 
+            console.log('📡 Ответ сервера на переключение:', response.status);
+
             if (response.ok) {
                 const updatedHabit = await response.json();
+                console.log('✅ Привычка обновлена:', updatedHabit);
+                
                 const habitIndex = this.habits.findIndex(h => h._id === id);
                 if (habitIndex > -1) {
                     this.habits[habitIndex] = updatedHabit;
                     this.render();
                     this.updateStats();
-                    this.renderCalendar(); // Обновляем календарь
+                    this.renderCalendar();
                 }
+            } else {
+                console.error('❌ Ошибка переключения привычки');
             }
         } catch (error) {
-            console.error('Ошибка отметки выполнения:', error);
+            console.error('❌ Ошибка подключения при переключении:', error);
         }
     }
 
     logout() {
+        console.log('🚪 Выходим из системы');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = 'login.html';
     }
 
     isCompletedToday(habit) {
-        const today = new Date().toDateString();
-        return habit.completions.some(
-            completion => new Date(completion.date).toDateString() === today
-        );
+        if (!habit.completions || habit.completions.length === 0) {
+            return false;
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        return habit.completions.some(completion => {
+            const completionDate = new Date(completion.date);
+            completionDate.setHours(0, 0, 0, 0);
+            return completionDate.getTime() === today.getTime();
+        });
     }
 
     render() {
         const habitsList = document.getElementById('habitsList');
         const emptyState = document.getElementById('emptyState');
 
-        if (!habitsList || !emptyState) return;
+        if (!habitsList || !emptyState) {
+            console.log('❌ Не найдены элементы для рендера привычек');
+            return;
+        }
+
+        console.log('🎨 Рендерим привычки. Количество:', this.habits.length);
 
         if (this.habits.length === 0) {
             habitsList.style.display = 'none';
@@ -270,7 +314,7 @@ class HabitTracker {
                 </div>
                 <div class="habit-progress">
                     <span class="progress-info">
-                        Выполнено: ${habit.completions.length} раз
+                        Выполнено: ${habit.completions ? habit.completions.length : 0} раз
                     </span>
                     <span class="streak">
                         🔥 Серия: ${habit.streak || 0} дней
@@ -280,6 +324,8 @@ class HabitTracker {
 
             habitsList.appendChild(habitElement);
         });
+
+        console.log('✅ Привычки отрендерены');
     }
 
     updateStats() {
@@ -287,7 +333,8 @@ class HabitTracker {
         const completedToday = this.habits.filter(habit => 
             this.isCompletedToday(habit)
         ).length;
-        const bestStreak = Math.max(0, ...this.habits.map(h => h.bestStreak || 0));
+        const bestStreak = this.habits.length > 0 ? 
+            Math.max(...this.habits.map(h => h.bestStreak || 0)) : 0;
 
         const totalHabitsEl = document.getElementById('totalHabits');
         const completedTodayEl = document.getElementById('completedToday');
@@ -296,6 +343,8 @@ class HabitTracker {
         if (totalHabitsEl) totalHabitsEl.textContent = totalHabits;
         if (completedTodayEl) completedTodayEl.textContent = completedToday;
         if (streakCountEl) streakCountEl.textContent = bestStreak;
+
+        console.log('📊 Статистика обновлена:', { totalHabits, completedToday, bestStreak });
     }
 
     // === КАЛЕНДАРЬ ===
@@ -311,18 +360,27 @@ class HabitTracker {
         if (nextBtn) {
             nextBtn.addEventListener('click', () => this.changeMonth(1));
         }
+
+        console.log('📅 Календарь инициализирован');
     }
 
     changeMonth(direction) {
         this.currentDate.setMonth(this.currentDate.getMonth() + direction);
         this.renderCalendar();
+        console.log('📅 Месяц изменен:', this.currentDate.getMonth() + 1, this.currentDate.getFullYear());
     }
 
     renderCalendar() {
         const currentMonthEl = document.getElementById('currentMonth');
         const calendarGrid = document.getElementById('calendarGrid');
         
-        if (!currentMonthEl || !calendarGrid) return;
+        if (!currentMonthEl || !calendarGrid) {
+            console.log('❌ Элементы календаря не найдены');
+            return;
+        }
+
+        console.log('📅 Рендерим календарь для:', this.currentDate.getMonth() + 1, this.currentDate.getFullYear());
+        console.log('📋 Привычек для календаря:', this.habits.length);
 
         const months = [
             'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -363,6 +421,8 @@ class HabitTracker {
             }
 
             const dayStatus = this.getDayStatus(currentDay);
+            console.log(`📅 День ${day}: привычек ${dayStatus.total}, выполнено ${dayStatus.completed}`);
+            
             if (dayStatus.hasHabits) {
                 if (dayStatus.completionRate === 1) {
                     dayElement.classList.add('completed');
@@ -375,13 +435,15 @@ class HabitTracker {
             
             calendarGrid.appendChild(dayElement);
         }
+
+        console.log('✅ Календарь отрендерен');
     }
 
     getDayStatus(date) {
         const dayHabits = this.getHabitsForDay(date);
         
         if (dayHabits.length === 0) {
-            return { hasHabits: false, completionRate: 0 };
+            return { hasHabits: false, completionRate: 0, total: 0, completed: 0 };
         }
 
         const completedCount = dayHabits.filter(habit => 
@@ -397,13 +459,23 @@ class HabitTracker {
     }
 
     getHabitsForDay(date) {
+        // Привычка доступна для дня, если она была создана до или в этот день
         return this.habits.filter(habit => {
             const habitCreated = new Date(habit.createdAt);
-            return habitCreated <= date;
+            habitCreated.setHours(0, 0, 0, 0);
+            
+            const checkDate = new Date(date);
+            checkDate.setHours(0, 0, 0, 0);
+            
+            return habitCreated <= checkDate;
         });
     }
 
     isHabitCompletedOnDay(habit, date) {
+        if (!habit.completions || habit.completions.length === 0) {
+            return false;
+        }
+        
         return habit.completions.some(completion => {
             const completionDate = new Date(completion.date);
             return this.isSameDay(completionDate, date);
@@ -422,7 +494,10 @@ class HabitTracker {
         const dayHabits = document.getElementById('dayHabits');
         const noDayHabits = document.getElementById('noDayHabits');
         
-        if (!modal || !modalDate || !dayHabits) return;
+        if (!modal || !modalDate || !dayHabits) {
+            console.log('❌ Элементы модального окна не найдены');
+            return;
+        }
 
         this.selectedDate = date;
         
@@ -435,6 +510,8 @@ class HabitTracker {
         modalDate.textContent = date.toLocaleDateString('ru-RU', options);
 
         const habitsForDay = this.getHabitsForDay(date);
+        
+        console.log('📅 Показываем день:', date, 'Привычек:', habitsForDay.length);
         
         if (habitsForDay.length === 0) {
             dayHabits.style.display = 'none';
