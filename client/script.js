@@ -5,6 +5,8 @@ const API_BASE_URL =
     : window.location.origin + "/api";
 
 console.log("🌐 API_BASE_URL:", API_BASE_URL);
+console.log("🌐 Current hostname:", window.location.hostname);
+console.log("🌐 Current origin:", window.location.origin);
 
 class HabitTracker {
     constructor() {
@@ -34,6 +36,9 @@ class HabitTracker {
             
             console.log('✅ Пользователь найден:', this.user.username);
 
+            // Сначала тестируем подключение к API
+            await this.testConnection();
+
             // Скрываем загрузку, показываем приложение
             this.hideLoading();
             
@@ -55,6 +60,27 @@ class HabitTracker {
         } catch (error) {
             console.error('❌ Ошибка инициализации:', error);
             this.showError(error.message);
+        }
+    }
+
+    async testConnection() {
+        console.log('🔍 Тестируем подключение к API...');
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/test`);
+            console.log('📡 Тестовый запрос - статус:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ API доступен:', data.message);
+            } else {
+                const text = await response.text();
+                console.log('❌ API недоступен. Ответ:', text.substring(0, 200));
+                throw new Error('API недоступен');
+            }
+        } catch (error) {
+            console.error('❌ Ошибка подключения к API:', error);
+            throw error;
         }
     }
 
@@ -117,33 +143,52 @@ class HabitTracker {
 
     async loadHabits() {
         console.log('📥 Загрузка привычек...');
+        console.log('🔗 URL запроса:', `${API_BASE_URL}/habits`);
+        console.log('🔑 Заголовки:', this.getAuthHeaders());
         
         try {
             const response = await fetch(`${API_BASE_URL}/habits`, {
+                method: 'GET',
                 headers: this.getAuthHeaders()
             });
 
             console.log('📡 Ответ сервера на загрузку привычек:', response.status);
+            console.log('📡 URL ответа:', response.url);
+            console.log('📡 Заголовки ответа:', [...response.headers.entries()]);
 
             if (response.ok) {
-                const data = await response.json();
-                this.habits = data;
-                console.log('✅ Привычки успешно загружены:', this.habits.length);
-                console.log('📋 Данные привычек:', this.habits);
+                const contentType = response.headers.get('content-type');
+                console.log('📄 Content-Type:', contentType);
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    this.habits = data;
+                    console.log('✅ Привычки успешно загружены:', this.habits.length);
+                    console.log('📋 Данные привычек:', this.habits);
+                } else {
+                    const text = await response.text();
+                    console.log('❌ Получен не JSON:', text.substring(0, 200));
+                    throw new Error('Сервер вернул не JSON данные');
+                }
             } else if (response.status === 401) {
                 console.log('❌ Токен недействителен, выходим');
                 this.logout();
                 return;
             } else {
-                const errorText = await response.text();
-                console.error('❌ Ошибка загрузки привычек:', response.status, errorText);
+                const text = await response.text();
+                console.error('❌ Ошибка загрузки привычек:', response.status, text.substring(0, 200));
                 throw new Error(`Ошибка сервера: ${response.status}`);
             }
         } catch (error) {
             console.error('❌ Ошибка подключения при загрузке привычек:', error);
             this.habits = [];
-            // Показываем ошибку пользователю
-            alert('Ошибка загрузки привычек. Проверьте подключение к интернету.');
+            
+            // Показываем детальную ошибку
+            if (error.message.includes('Unexpected token')) {
+                alert('Ошибка: сервер вернул HTML вместо данных. Проверьте настройки сервера.');
+            } else {
+                alert('Ошибка загрузки привычек: ' + error.message);
+            }
         }
     }
 
@@ -421,7 +466,6 @@ class HabitTracker {
             }
 
             const dayStatus = this.getDayStatus(currentDay);
-            console.log(`📅 День ${day}: привычек ${dayStatus.total}, выполнено ${dayStatus.completed}`);
             
             if (dayStatus.hasHabits) {
                 if (dayStatus.completionRate === 1) {
@@ -459,7 +503,6 @@ class HabitTracker {
     }
 
     getHabitsForDay(date) {
-        // Привычка доступна для дня, если она была создана до или в этот день
         return this.habits.filter(habit => {
             const habitCreated = new Date(habit.createdAt);
             habitCreated.setHours(0, 0, 0, 0);

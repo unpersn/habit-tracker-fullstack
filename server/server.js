@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/database');
 
 const app = express();
@@ -14,18 +15,8 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
-const path = require('path');
 
-// Отдача статических файлов из client/
-app.use(express.static(path.join(__dirname, '../client')));
-
-// Если путь не найден среди API, возвращаем index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/index.html'));
-});
-
-
-// Routes
+// API Routes ДОЛЖНЫ БЫТЬ ПЕРЕД статическими файлами!
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/habits', require('./routes/habits'));
 
@@ -38,9 +29,17 @@ app.get('/api/test', (req, res) => {
     });
 });
 
-// Обработка несуществующих роутов
-app.use('*', (req, res) => {
-    res.status(404).json({ message: 'Роут не найден' });
+// Отдача статических файлов из client/ (ПОСЛЕ API роутов!)
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Если путь не найден среди API, возвращаем index.html (ПОСЛЕДНИМ!)
+app.get('*', (req, res) => {
+    // Если это API запрос, но роут не найден
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ message: 'API роут не найден' });
+    }
+    // Иначе отдаем index.html для SPA
+    res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 
 // Глобальная обработка ошибок
