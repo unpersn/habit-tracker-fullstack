@@ -14,7 +14,16 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static('../client'));
+const path = require('path');
+
+// Отдача статических файлов из client/
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Если путь не найден среди API, возвращаем index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/index.html'));
+});
+
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

@@ -34,6 +34,42 @@
                 </form>
             </section>
 
+            <!-- Новый раздел календаря -->
+            <section class="calendar-section">
+                <h2>📅 Календарь привычек</h2>
+                <div class="calendar-controls">
+                    <button id="prevMonth" class="calendar-btn">‹</button>
+                    <h3 id="currentMonth"></h3>
+                    <button id="nextMonth" class="calendar-btn">›</button>
+                </div>
+                <div class="calendar-container">
+                    <div class="calendar-weekdays">
+                        <div class="weekday">Пн</div>
+                        <div class="weekday">Вт</div>
+                        <div class="weekday">Ср</div>
+                        <div class="weekday">Чт</div>
+                        <div class="weekday">Пт</div>
+                        <div class="weekday">Сб</div>
+                        <div class="weekday">Вс</div>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid"></div>
+                </div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color no-habits"></div>
+                        <span>Нет привычек</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color partial"></div>
+                        <span>Частично выполнено</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color completed"></div>
+                        <span>Все выполнено</span>
+                    </div>
+                </div>
+            </section>
+
             <section class="habits-section">
                 <h2>Мои привычки</h2>
                 <div id="habitsList" class="habits-list"></div>
@@ -60,6 +96,22 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Модальное окно для просмотра дня -->
+    <div id="dayModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDate"></h3>
+                <span class="close" onclick="habitTracker.closeDayModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="dayHabits"></div>
+                <div id="noDayHabits" class="empty-day" style="display: none;">
+                    <p>В этот день привычки не отслеживались</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Экран ошибки -->
