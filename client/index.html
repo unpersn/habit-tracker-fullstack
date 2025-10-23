@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер привычек</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Загрузка...</p>
+    </div>
+
+    <!-- Основное приложение -->
+    <div id="mainApp" class="container" style="display: none;">
+        <header>
+            <h1>🎯 Трекер привычек</h1>
+            <p class="subtitle">Отслеживайте свои ежедневные привычки</p>
+        </header>
+
+        <main>
+            <section class="add-habit-section">
+                <h2>Добавить новую привычку</h2>
+                <form id="habitForm" class="habit-form">
+                    <input 
+                        type="text" 
+                        id="habitInput" 
+                        placeholder="Например: Выпить 8 стаканов воды"
+                        required
+                    >
+                    <button type="submit">Добавить</button>
+                </form>
+            </section>
+
+            <section class="habits-section">
+                <h2>Мои привычки</h2>
+                <div id="habitsList" class="habits-list"></div>
+                <div id="emptyState" class="empty-state">
+                    <p>У вас пока нет привычек. Добавьте первую!</p>
+                </div>
+            </section>
+
+            <section class="stats-section">
+                <h2>Статистика</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalHabits">0</span>
+                        <span class="stat-label">Всего привычек</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="completedToday">0</span>
+                        <span class="stat-label">Выполнено сегодня</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="streakCount">0</span>
+                        <span class="stat-label">Лучшая серия</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Экран ошибки -->
+    <div id="errorMessage" class="error-message" style="display: none;">
+        <h2>Ошибка загрузки</h2>
+        <p id="errorText"></p>
+        <button onclick="window.location.reload()">Перезагрузить</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
