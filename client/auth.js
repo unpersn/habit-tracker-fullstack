@@ -4,7 +4,7 @@ const API_BASE_URL =
     ? "http://localhost:5000/api"
     : window.location.origin + "/api";
 
-console.log("🌐 API_BASE_URL:", API_BASE_URL);
+console.log("API_BASE_URL:", API_BASE_URL);
 
 class AuthManager {
     constructor() {
@@ -24,11 +24,11 @@ class AuthManager {
     }
 
     initAuthPage() {
-        console.log('🔐 Инициализация страницы авторизации');
+        console.log('Инициализация страницы авторизации');
         
         // Если уже авторизован, перенаправляем на главную
         if (this.token && this.user) {
-            console.log('✅ Пользователь уже авторизован, перенаправляем');
+            console.log('Пользователь уже авторизован, перенаправляем');
             window.location.href = 'index.html';
             return;
         }
@@ -48,7 +48,7 @@ class AuthManager {
             registerForm.addEventListener('submit', (e) => this.handleRegister(e));
         }
 
-        console.log('🎯 События авторизации привязаны');
+        console.log('События авторизации привязаны');
     }
 
     async handleLogin(e) {
@@ -76,10 +76,10 @@ class AuthManager {
             });
 
             const data = await response.json();
-            console.log('📡 Ответ сервера на вход:', response.status);
+            console.log('Ответ сервера на вход:', response.status);
 
             if (response.ok) {
-                console.log('✅ Успешный вход');
+                console.log('Успешный вход');
                 this.setAuth(data.token, data.user);
                 this.showMessage('Успешный вход!', 'success');
                 
@@ -89,11 +89,11 @@ class AuthManager {
                 }, 1000);
                 
             } else {
-                console.log('❌ Ошибка входа:', data.message);
+                console.log('Ошибка входа:', data.message);
                 this.showMessage(data.message || 'Ошибка входа', 'error');
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения при входе:', error);
+            console.error('Ошибка подключения при входе:', error);
             this.showMessage('Ошибка подключения к серверу', 'error');
         } finally {
             this.showLoading(false);
@@ -128,7 +128,7 @@ class AuthManager {
             return;
         }
 
-        console.log('📝 Попытка регистрации для:', email);
+        console.log('Попытка регистрации для:', email);
 
         try {
             this.showLoading(true);
@@ -145,7 +145,7 @@ class AuthManager {
             console.log('📡 Ответ сервера на регистрацию:', response.status);
 
             if (response.ok) {
-                console.log('✅ Успешная регистрация');
+                console.log('Успешная регистрация');
                 this.setAuth(data.token, data.user);
                 this.showMessage('Регистрация успешна!', 'success');
                 
@@ -155,11 +155,11 @@ class AuthManager {
                 }, 1000);
                 
             } else {
-                console.log('❌ Ошибка регистрации:', data.message);
+                console.log('Ошибка регистрации:', data.message);
                 this.showMessage(data.message || 'Ошибка регистрации', 'error');
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения при регистрации:', error);
+            console.error('Ошибка подключения при регистрации:', error);
             this.showMessage('Ошибка подключения к серверу', 'error');
         } finally {
             this.showLoading(false);
@@ -167,7 +167,7 @@ class AuthManager {
     }
 
     setAuth(token, user) {
-        console.log('💾 Сохранение данных авторизации для:', user.username);
+        console.log('Сохранение данных авторизации для:', user.username);
         
         this.token = token;
         this.user = user;
@@ -177,7 +177,7 @@ class AuthManager {
     }
 
     logout() {
-        console.log('🚪 Выход из системы');
+        console.log('Выход из системы');
         
         this.token = null;
         this.user = null;
@@ -189,15 +189,15 @@ class AuthManager {
     }
 
     checkAuth() {
-        console.log('🔍 Проверка авторизации');
+        console.log('Проверка авторизации');
         
         if (!this.token || !this.user) {
-            console.log('❌ Не авторизован, перенаправляем на login');
+            console.log('Не авторизован, перенаправляем на login');
             window.location.href = 'login.html';
             return false;
         }
         
-        console.log('✅ Авторизован как:', this.user.username);
+        console.log('Авторизован как:', this.user.username);
         return true;
     }
 
@@ -322,20 +322,20 @@ function showRegister() {
 }
 
 // Инициализация менеджера авторизации
-console.log('🔐 Загрузка AuthManager');
+console.log('Загрузка AuthManager');
 
 // Создаем глобальную переменную для доступа из других скриптов
 let authManager;
 
 // Инициализация после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM загружен, создаем AuthManager');
+    console.log('DOM загружен, создаем AuthManager');
     authManager = new AuthManager();
 });
 
 // Если DOM уже загружен
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    console.log('📄 DOM уже готов, создаем AuthManager');
+    console.log('DOM уже готов, создаем AuthManager');
     authManager = new AuthManager();
 }
 

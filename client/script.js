@@ -4,7 +4,7 @@ const API_BASE_URL =
     ? "http://localhost:5000/api"
     : window.location.origin + "/api";
 
-console.log("🌐 API_BASE_URL:", API_BASE_URL);
+console.log("API_BASE_URL:", API_BASE_URL);
 
 class HabitTracker {
     constructor() {
@@ -24,7 +24,7 @@ class HabitTracker {
             const user = localStorage.getItem('user');
             
             if (!token || !user) {
-                console.log('❌ Нет токена, перенаправляем на login');
+                console.log('Нет токена, перенаправляем на login');
                 window.location.href = 'login.html';
                 return;
             }
@@ -32,7 +32,7 @@ class HabitTracker {
             this.user = JSON.parse(user);
             this.token = token;
             
-            console.log('✅ Пользователь найден:', this.user.username);
+            console.log('Пользователь найден:', this.user.username);
 
             // Сначала тестируем подключение к API
             await this.testConnection();
@@ -54,31 +54,31 @@ class HabitTracker {
             this.renderCalendar();
             this.updateSelectedDateInfo();
             
-            console.log('✅ Инициализация завершена. Привычек загружено:', this.habits.length);
+            console.log('Инициализация завершена. Привычек загружено:', this.habits.length);
             
         } catch (error) {
-            console.error('❌ Ошибка инициализации:', error);
+            console.error('Ошибка инициализации:', error);
             this.showError(error.message);
         }
     }
 
     async testConnection() {
-        console.log('🔍 Тестируем подключение к API...');
+        console.log('Тестируем подключение к API...');
         
         try {
             const response = await fetch(`${API_BASE_URL}/test`);
-            console.log('📡 Тестовый запрос - статус:', response.status);
+            console.log('Тестовый запрос - статус:', response.status);
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('✅ API доступен:', data.message);
+                console.log('API доступен:', data.message);
             } else {
                 const text = await response.text();
-                console.log('❌ API недоступен. Ответ:', text.substring(0, 200));
+                console.log('API недоступен. Ответ:', text.substring(0, 200));
                 throw new Error('API недоступен');
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения к API:', error);
+            console.error('Ошибка подключения к API:', error);
             throw error;
         }
     }
@@ -127,7 +127,7 @@ class HabitTracker {
         const userInfo = document.createElement('div');
         userInfo.className = 'user-info';
         userInfo.innerHTML = `
-            <span class="user-welcome">👋 Привет, ${this.user.username}!</span>
+            <span class="user-welcome">Привет, ${this.user.username}!</span>
             <button class="logout-btn" onclick="habitTracker.logout()">Выйти</button>
         `;
         header.appendChild(userInfo);
@@ -146,7 +146,7 @@ class HabitTracker {
     }
 
     async loadHabits() {
-        console.log('📥 Загрузка привычек...');
+        console.log('Загрузка привычек...');
         
         try {
             const response = await fetch(`${API_BASE_URL}/habits`, {
@@ -154,7 +154,7 @@ class HabitTracker {
                 headers: this.getAuthHeaders()
             });
 
-            console.log('📡 Ответ сервера на загрузку привычек:', response.status);
+            console.log('Ответ сервера на загрузку привычек:', response.status);
 
             if (response.ok) {
                 const contentType = response.headers.get('content-type');
@@ -162,23 +162,23 @@ class HabitTracker {
                 if (contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     this.habits = data;
-                    console.log('✅ Привычки успешно загружены:', this.habits.length);
+                    console.log('Привычки успешно загружены:', this.habits.length);
                 } else {
                     const text = await response.text();
-                    console.log('❌ Получен не JSON:', text.substring(0, 200));
+                    console.log('Получен не JSON:', text.substring(0, 200));
                     throw new Error('Сервер вернул не JSON данные');
                 }
             } else if (response.status === 401) {
-                console.log('❌ Токен недействителен, выходим');
+                console.log('Токен недействителен, выходим');
                 this.logout();
                 return;
             } else {
                 const text = await response.text();
-                console.error('❌ Ошибка загрузки привычек:', response.status, text.substring(0, 200));
+                console.error('Ошибка загрузки привычек:', response.status, text.substring(0, 200));
                 throw new Error(`Ошибка сервера: ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения при загрузке привычек:', error);
+            console.error('Ошибка подключения при загрузке привычек:', error);
             this.habits = [];
             
             if (error.message.includes('Unexpected token')) {
@@ -197,7 +197,7 @@ class HabitTracker {
 
         if (!habitName) return;
 
-        console.log('➕ Добавляем привычку:', habitName);
+        console.log('Добавляем привычку:', habitName);
 
         try {
             const response = await fetch(`${API_BASE_URL}/habits`, {
@@ -206,11 +206,11 @@ class HabitTracker {
                 body: JSON.stringify({ name: habitName })
             });
 
-            console.log('📡 Ответ сервера на добавление:', response.status);
+            console.log('Ответ сервера на добавление:', response.status);
 
             if (response.ok) {
                 const newHabit = await response.json();
-                console.log('✅ Новая привычка создана:', newHabit);
+                console.log('Новая привычка создана:', newHabit);
                 
                 this.habits.unshift(newHabit);
                 this.render();
@@ -218,14 +218,14 @@ class HabitTracker {
                 this.renderCalendar();
                 input.value = '';
                 
-                console.log('📊 Всего привычек теперь:', this.habits.length);
+                console.log('Всего привычек теперь:', this.habits.length);
             } else {
                 const errorText = await response.text();
-                console.error('❌ Ошибка добавления привычки:', errorText);
+                console.error('Ошибка добавления привычки:', errorText);
                 alert('Ошибка добавления привычки');
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения при добавлении:', error);
+            console.error('Ошибка подключения при добавлении:', error);
             alert('Ошибка подключения к серверу');
         }
     }
@@ -233,7 +233,7 @@ class HabitTracker {
     async deleteHabit(id) {
         if (!confirm('Удалить привычку?')) return;
 
-        console.log('🗑️ Удаляем привычку:', id);
+        console.log('Удаляем привычку:', id);
 
         try {
             const response = await fetch(`${API_BASE_URL}/habits/${id}`, {
@@ -241,25 +241,25 @@ class HabitTracker {
                 headers: this.getAuthHeaders()
             });
 
-            console.log('📡 Ответ сервера на удаление:', response.status);
+            console.log('Ответ сервера на удаление:', response.status);
 
             if (response.ok) {
                 this.habits = this.habits.filter(habit => habit._id !== id);
                 this.render();
                 this.updateStats();
                 this.renderCalendar();
-                console.log('✅ Привычка удалена. Осталось:', this.habits.length);
+                console.log('Привычка удалена. Осталось:', this.habits.length);
             } else {
-                console.error('❌ Ошибка удаления привычки');
+                console.error('Ошибка удаления привычки');
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения при удалении:', error);
+            console.error('Ошибка подключения при удалении:', error);
         }
     }
 
     async toggleHabitCompletion(id, forDate = null) {
         const targetDate = forDate || this.selectedDate;
-        console.log('🔄 Переключаем выполнение привычки:', id, 'для даты:', targetDate);
+        console.log('Переключаем выполнение привычки:', id, 'для даты:', targetDate);
 
         try {
             const response = await fetch(`${API_BASE_URL}/habits/${id}/complete`, {
@@ -270,11 +270,11 @@ class HabitTracker {
                 })
             });
 
-            console.log('📡 Ответ сервера на переключение:', response.status);
+            console.log('Ответ сервера на переключение:', response.status);
 
             if (response.ok) {
                 const updatedHabit = await response.json();
-                console.log('✅ Привычка обновлена:', updatedHabit);
+                console.log('Привычка обновлена:', updatedHabit);
                 
                 const habitIndex = this.habits.findIndex(h => h._id === id);
                 if (habitIndex > -1) {
@@ -284,15 +284,15 @@ class HabitTracker {
                     this.renderCalendar();
                 }
             } else {
-                console.error('❌ Ошибка переключения привычки');
+                console.error('Ошибка переключения привычки');
             }
         } catch (error) {
-            console.error('❌ Ошибка подключения при переключении:', error);
+            console.error('Ошибка подключения при переключении:', error);
         }
     }
 
     logout() {
-        console.log('🚪 Выходим из системы');
+        console.log('Выходим из системы');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = 'login.html';
@@ -321,12 +321,12 @@ class HabitTracker {
         
         // Не позволяем выбирать будущие дни
         if (date > today) {
-            console.log('❌ Нельзя выбрать будущий день');
+            console.log('Нельзя выбрать будущий день');
             return;
         }
 
         this.selectedDate = new Date(date);
-        console.log('📅 Выбрана дата:', this.selectedDate);
+        console.log('Выбрана дата:', this.selectedDate);
         
         this.render();
         this.renderCalendar();
@@ -335,7 +335,7 @@ class HabitTracker {
 
     selectToday() {
         this.selectedDate = new Date();
-        console.log('📅 Возврат к сегодняшнему дню');
+        console.log('Возврат к сегодняшнему дню');
         
         this.render();
         this.renderCalendar();
@@ -364,7 +364,7 @@ class HabitTracker {
                 month: 'long', 
                 day: 'numeric' 
             };
-            selectedDateText.textContent = `📅 ${this.selectedDate.toLocaleDateString('ru-RU', options)}`;
+            selectedDateText.textContent = `${this.selectedDate.toLocaleDateString('ru-RU', options)}`;
             habitsTitle.textContent = 'Привычки на выбранный день';
         }
     }
@@ -374,13 +374,13 @@ class HabitTracker {
         const emptyState = document.getElementById('emptyState');
 
         if (!habitsList || !emptyState) {
-            console.log('❌ Не найдены элементы для рендера привычек');
+            console.log('Не найдены элементы для рендера привычек');
             return;
         }
 
         // Получаем привычки для выбранного дня
         const habitsForSelectedDay = this.getHabitsForDay(this.selectedDate);
-        console.log('🎨 Рендерим привычки для выбранного дня. Количество:', habitsForSelectedDay.length);
+        console.log('Рендерим привычки для выбранного дня. Количество:', habitsForSelectedDay.length);
 
         if (habitsForSelectedDay.length === 0) {
             habitsList.style.display = 'none';
@@ -423,7 +423,7 @@ class HabitTracker {
                             onclick="habitTracker.toggleHabitCompletion('${habit._id}')"
                             ${!canEdit ? 'disabled' : ''}
                         >
-                            ${isCompleted ? '✓ Выполнено' : 'Выполнить'}
+                            ${isCompleted ? 'Выполнено' : 'Выполнить'}
                         </button>
                         ${isToday ? `
                         <button 
@@ -440,7 +440,7 @@ class HabitTracker {
                         Выполнено: ${habit.completions ? habit.completions.length : 0} раз
                     </span>
                     <span class="streak">
-                        🔥 Серия: ${habit.streak || 0} дней
+                        Серия: ${habit.streak || 0} дней
                     </span>
                 </div>
             `;
@@ -448,7 +448,7 @@ class HabitTracker {
             habitsList.appendChild(habitElement);
         });
 
-        console.log('✅ Привычки отрендерены для выбранного дня');
+        console.log('Привычки отрендерены для выбранного дня');
     }
 
     updateStats() {
@@ -467,7 +467,7 @@ class HabitTracker {
         if (completedTodayEl) completedTodayEl.textContent = completedToday;
         if (streakCountEl) streakCountEl.textContent = bestStreak;
 
-        console.log('📊 Статистика обновлена:', { totalHabits, completedToday, bestStreak });
+        console.log('Статистика обновлена:', { totalHabits, completedToday, bestStreak });
     }
 
     // === КАЛЕНДАРЬ ===
@@ -484,13 +484,13 @@ class HabitTracker {
             nextBtn.addEventListener('click', () => this.changeMonth(1));
         }
 
-        console.log('📅 Календарь инициализирован');
+        console.log('Календарь инициализирован');
     }
 
     changeMonth(direction) {
         this.currentDate.setMonth(this.currentDate.getMonth() + direction);
         this.renderCalendar();
-        console.log('📅 Месяц изменен:', this.currentDate.getMonth() + 1, this.currentDate.getFullYear());
+        console.log('Месяц изменен:', this.currentDate.getMonth() + 1, this.currentDate.getFullYear());
     }
 
     renderCalendar() {
@@ -498,11 +498,11 @@ class HabitTracker {
         const calendarGrid = document.getElementById('calendarGrid');
         
         if (!currentMonthEl || !calendarGrid) {
-            console.log('❌ Элементы календаря не найдены');
+            console.log('Элементы календаря не найдены');
             return;
         }
 
-        console.log('📅 Рендерим календарь для:', this.currentDate.getMonth() + 1, this.currentDate.getFullYear());
+        console.log('Рендерим календарь для:', this.currentDate.getMonth() + 1, this.currentDate.getFullYear());
 
         const months = [
             'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -572,7 +572,7 @@ class HabitTracker {
             calendarGrid.appendChild(dayElement);
         }
 
-        console.log('✅ Календарь отрендерен');
+        console.log('Календарь отрендерен');
     }
 
     getDayStatus(date) {
@@ -615,11 +615,11 @@ class HabitTracker {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM загружен, создаем HabitTracker');
+    console.log('DOM загружен, создаем HabitTracker');
     window.habitTracker = new HabitTracker();
 });
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    console.log('📄 DOM уже готов, создаем HabitTracker');
+    console.log('DOM уже готов, создаем HabitTracker');
     window.habitTracker = new HabitTracker();
 }
